@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 User = get_user_model()
 
@@ -32,3 +34,21 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Review(models.Model):
+    text = models.TextField(help_text='Текст review')
+    pub_date = models.DateTimeField(
+        'Дата публикации', auto_now_add=True
+    )
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='review'
+    )
+    titles = models.ForeignKey(
+        Titles, on_delete=models.CASCADE,
+        related_name="review"
+    )
+    score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
+
+    def __str__(self):
+        return self.text[:15]
