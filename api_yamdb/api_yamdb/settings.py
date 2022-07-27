@@ -11,7 +11,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'users.User'   # Новая строчка
+AUTH_USER_MODEL = 'reviews.User'   # Новая строчка
 
 
 # Application definition
@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'api.apps.ApiConfig',         # Новая строчка
-    'reviews.apps.ReviewsConfig', # Новая строчка
+    'reviews.apps.ReviewsConfig',  # Новая строчка
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',

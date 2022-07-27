@@ -2,7 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-ROLES = ('user', 'moderator', 'admin')
+ROLES = (
+    ('user', 'Юзер'),
+    ('moderator', 'Модератор'),
+    ('admin', 'Адинистратор'),
+)
 
 
 class User(AbstractUser):
@@ -34,9 +38,10 @@ class Title(models.Model):  # убрал множественное число
     description = models.TextField(help_text='Описание', blank=True)
     # изменил тип поля
     genre = models.ManyToManyField(Genre, through='Title_genre')
+    # добавил blank=True, null=True
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL,
-        related_name="titles"
+        related_name="titles", blank=True, null=True
     )
 
     def __str__(self):
