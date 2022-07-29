@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 ROLES = (
@@ -69,7 +70,11 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE,
         related_name="reviews"
     )
-    score = models.IntegerField(help_text='Оценка score')
+    score = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)])
+
+    class Meta:
+        unique_together = ('author', 'title')
 
     def __str__(self):
         return self.text[:15]
@@ -86,3 +91,6 @@ class Comment(models.Model):
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
+
+    def __str__(self):
+        return self.text[:15]

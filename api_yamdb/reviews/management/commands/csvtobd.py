@@ -28,8 +28,15 @@ class Command(BaseCommand):
                 if row[0] == 'id':
                     fields = row[:]
                 else:
-                    values = {}
-                    for i in range(len(row)):
-                        values[fields[i]] = row[i]
-                    models[model].objects.get_or_create(**values)
-                    print(Genre.objects.get(id=row[0]))
+                    # values = {}
+                    # for i in range(len(row)):
+                    #     values[fields[i]] = row[i]
+                    # models[model].objects.get_or_create(**values)
+                    models[model].objects.get_or_create(
+                        id=row[0],
+                        review=Review.objects.get(id=row[1]),
+                        text=row[2],
+                        author=User.objects.get(id=row[3]),
+                        pub_date=row[4],
+                    )
+                    print(models[model].objects.get(id=row[0]))
