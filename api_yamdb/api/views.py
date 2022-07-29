@@ -1,12 +1,13 @@
 from rest_framework import viewsets, permissions
 from reviews.models import User
-from .serializers import AuthSignupSerializer, AuthTokenSerializer, UserSerializer
+from .serializers import AuthSignupSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import filters
 from django.core.mail import send_mail
 import random
 
+from rest_framework_simplejwt.tokens import RefreshToken
 
 CODES = {}
 
@@ -33,11 +34,10 @@ def user_create(request):
             user_name = request.data['username']
             user_key = generate_code()
             CODES[user_name] = user_key
-            print(CODES)
             user_email = request.data['email']
             send_mail(
                 'Код для завершения аутентификации',
-                f'Вы получили confirmation_code: {user_key} для завершения регистрации',
+                f'{user_name} получили confirmation_code: {user_key} для завершения регистрации',
                 'yatube@example.com',  # Это поле "От кого"
                 [f'{user_email}'],  # Это поле "Кому"
             )
@@ -47,7 +47,7 @@ def user_create(request):
 
 @api_view(['POST'])
 def token_create(request):
-    serializer = AuthTokenSerializer(data=request.data)
-    if serializer.is_valid():
-        return Response(serializer.data, status=201)
-    return Response(serializer.errors, status=400)
+    if request.data['confirmation_code'] == CODES[request.data['username']]:
+        user = User.objects.get(username=request.data['username'])
+        refresh = RefreshToken.for_user(user)
+        return Response({'token': str(refresh.access_token)}, status=201)
