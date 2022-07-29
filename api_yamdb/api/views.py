@@ -1,11 +1,13 @@
 from rest_framework import viewsets, permissions
 from reviews.models import User
-from .serializers import AuthSignupSerializer, UserSerializer
+from .serializers import AuthSignupSerializer, AuthTokenSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import filters
 from django.core.mail import send_mail
 
+
+confirmation_code = "1234567890"
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -21,7 +23,6 @@ def user_create(request):
         serializer = AuthSignupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            confirmation_code = "1234567890"
             user_email = request.data['email']
             send_mail(
                 'Код для завершения аутентификации',
@@ -33,5 +34,7 @@ def user_create(request):
         return Response(serializer.errors, status=400)
 
 
-def token_kreate(request):
-    pass
+def token_create(request):
+    serializer = AuthTokenSerializer(data=request.data)
+    if serializer.is_valid():
+        print(request.data['confirmation_code'])
