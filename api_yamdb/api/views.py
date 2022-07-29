@@ -5,9 +5,16 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import filters
 from django.core.mail import send_mail
+import random
 
 
-confirmation_code = "1234567890"
+CODES = {}
+
+
+def generate_code():
+    random.seed()
+    return str(random.randint(10000, 99999))
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -23,10 +30,14 @@ def user_create(request):
         serializer = AuthSignupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            user_name = request.data['username']
+            user_key = generate_code()
+            CODES[user_name] = user_key
+            print(CODES)
             user_email = request.data['email']
             send_mail(
                 'Код для завершения аутентификации',
-                f'  вы получили confirmation_code: {confirmation_code}',
+                f'Вы получили confirmation_code: {user_key} для завершения регистрации',
                 'yatube@example.com',  # Это поле "От кого"
                 [f'{user_email}'],  # Это поле "Кому"
             )
@@ -34,7 +45,9 @@ def user_create(request):
         return Response(serializer.errors, status=400)
 
 
+@api_view(['POST'])
 def token_create(request):
     serializer = AuthTokenSerializer(data=request.data)
     if serializer.is_valid():
-        print(request.data['confirmation_code'])
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
