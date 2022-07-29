@@ -4,12 +4,7 @@ from .serializers import AuthSignupSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import filters
-
-
-
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -26,8 +21,17 @@ def user_create(request):
         serializer = AuthSignupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            print(serializer)
-            #token = default_token_generator.make_token(serializer)
-            #uid = urlsafe_base64_encode(force_bytes(serializer.pk))
+            confirmation_code = "1234567890"
+            user_email = request.data['email']
+            send_mail(
+                'Код для завершения аутентификации',
+                f'  вы получили confirmation_code: {confirmation_code}',
+                'yatube@example.com',  # Это поле "От кого"
+                [f'{user_email}'],  # Это поле "Кому"
+            )
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+
+
+def token_kreate(request):
+    pass
