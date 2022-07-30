@@ -1,11 +1,13 @@
 from rest_framework import viewsets, permissions
 from reviews.models import User
 from .serializers import AuthSignupSerializer, UserSerializer
+from .permissions import AdminOnly
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import filters
 from django.core.mail import send_mail
 import random
+from django.shortcuts import get_object_or_404
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -18,11 +20,27 @@ def generate_code():
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('username',)
-    permission_classes = (permissions.IsAdminUser, )
+    search_fields = ('$username',)
+    permission_classes = (AdminOnly,)
+
+
+class UsernameViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (AdminOnly,)
+
+    def get_queryset(self):
+        username = get_object_or_404(User, pk=self.kwargs.get('username'))
+        print(self.kwargs.get('username'))
+        return username.users
+
+
+class MeViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 @api_view(['POST'])
