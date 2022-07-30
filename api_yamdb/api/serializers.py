@@ -11,6 +11,13 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
 
 
+class AuthSignupSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
