@@ -11,9 +11,15 @@ ROLES = (
 
 
 class User(AbstractUser):
-    bio = models.TextField('Биография', blank=True,)
+    # bio = models.TextField('Биография', blank=True,)
+    bio = models.TextField(
+        verbose_name='Биография',
+        max_length=300,
+        blank=True,
+    )
     # добавил поле с выбором значений
     role = models.CharField(max_length=10, choices=ROLES, default='user')
+    ordering = ['id']
 
 
 class Genre(models.Model):
