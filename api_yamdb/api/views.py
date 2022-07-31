@@ -49,12 +49,21 @@ class MeViewSet(viewsets.ModelViewSet):
     def user_create(request):
         if request.method == 'POST':
             serializer = AuthSignupSerializer(data=request.data)
+            user_name = request.data['username']
+            authorize_user = str(get_object_or_404(User, username=user_name))
+            user_key = generate_code()
+            CODES[user_name] = user_key
+            user_email = request.data['email']
             if serializer.is_valid():
                 serializer.save()
-                user_name = request.data['username']
-                user_key = generate_code()
-                CODES[user_name] = user_key
-                user_email = request.data['email']
+                send_mail(
+                    'Код для завершения аутентификации',
+                    f'{user_name} получили confirmation_code:'
+                    + f'{user_key} для завершения регистрации',
+                    'yatube@example.com',  # Это поле "От кого"
+                    [f'{user_email}'],  # Это поле "Кому"
+                )
+            elif user_name == authorize_user:
                 send_mail(
                     'Код для завершения аутентификации',
                     f'{user_name} получили confirmation_code:'
@@ -64,6 +73,7 @@ class MeViewSet(viewsets.ModelViewSet):
                 )
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)
+
 
     @api_view(['POST'])
     def token_create(request):
