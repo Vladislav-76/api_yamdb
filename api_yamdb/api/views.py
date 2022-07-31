@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from django.core.mail import send_mail
 from reviews.models import Title, Review, User, Genre, Category, Title
 from api.serializers import (AuthSignupSerializer, ReviewSerializer,
-                             CommentSerializer,
+                             CommentSerializer, AuthTokenSerializer,
                              UserSerializer, GenreSerializer,
                              CategorySerializer, TitlesSerializer)
 from rest_framework.permissions import (IsAuthenticatedOrReadOnly)
@@ -28,33 +28,36 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('$username',)
     permission_classes = (AdminOnly,)
+    lookup_field = 'username'
 
 
-class UsernameViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (AdminOnly,)
+# class UsernameViewSet(viewsets.ModelViewSet):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+#     permission_classes = (AdminOnly,)
+#     lookup_field = 'username'
 
-    def get_queryset(self):
-        username = get_object_or_404(User, pk=self.kwargs.get('username'))
-        print(self.kwargs.get('username'))
-        return username.users
+#     def get_queryset(self):
+#        new_queryset =get_object_or_404(
+#            User, username=self.kwargs.get('username'))
+#         print(self.kwargs.get('username'))
+#         return new_queryset
 
 
-class MeViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class AuthViewSet(viewsets.ModelViewSet):
+    # queryset = User.objects.all()
+    # serializer_class = UserSerializer
 
     @api_view(['POST'])
     def user_create(request):
-        if request.method == 'POST':
-            serializer = AuthSignupSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                user_name = request.data['username']
-                user_key = generate_code()
-                CODES[user_name] = user_key
-                user_email = request.data['email']
+        serializer = AuthSignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user_name = request.data['username']
+            user_email = request.data['email']
+            user_key = generate_code()
+            CODES[user_name] = user_key
+            if User.objects.filter(
+                    username=user_name, email=user_email).exists():
                 send_mail(
                     'Код для завершения аутентификации',
                     f'{user_name} получили confirmation_code:'
@@ -62,17 +65,51 @@ class MeViewSet(viewsets.ModelViewSet):
                     'yatube@example.com',  # Это поле "От кого"
                     [f'{user_email}'],  # Это поле "Кому"
                 )
-                return Response(serializer.data, status=201)
+                return Response(serializer.data, status=200)
+            else:
+                if User.objects.filter(email=user_email).exists():
+                    return Response(
+                        'Пользователь с таким email уже существует!',
+                        status=400)
+                elif User.objects.filter(username=user_name).exists():
+                    return Response(
+                        'Пользователь с таким username уже существует!',
+                        status=400)
+                else:
+                    serializer.save()
+                    send_mail(
+                        'Код для завершения аутентификации',
+                        f'{user_name} получили confirmation_code:'
+                        + f'{user_key} для завершения регистрации',
+                        'yatube@example.com',  # Это поле "От кого"
+                        [f'{user_email}'],  # Это поле "Кому"
+                    )
+                    return Response(serializer.data, status=200)
+        else:
             return Response(serializer.errors, status=400)
 
     @api_view(['POST'])
     def token_create(request):
-        confirmation_code = request.data['confirmation_code']
-        username = CODES[request.data['username']]
-        if confirmation_code == username:
-            user = User.objects.get(username=request.data['username'])
-            refresh = RefreshToken.for_user(user)
-            return Response({'token': str(refresh.access_token)}, status=201)
+        serializer = AuthTokenSerializer(data=request.data)
+        if serializer.is_valid():
+            if User.objects.filter(username=request.data['username']).exists():
+                confirmation_code = request.data['confirmation_code']
+                username = CODES[request.data['username']]
+                if confirmation_code == username:
+                    user = User.objects.get(username=request.data['username'])
+                    refresh = RefreshToken.for_user(user)
+                    return Response(
+                        {'token': str(refresh.access_token)}, status=200)
+                else:
+                    return Response(
+                        'Не верный confirmation_code!',
+                        status=400)
+            else:
+                return Response(
+                    'Пользователь не найден!',
+                    status=404)
+        else:
+            return Response(serializer.errors, status=400)
 
 
 class GenreViewSet(viewsets.ModelViewSet):

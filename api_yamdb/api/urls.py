@@ -2,15 +2,15 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from .views import (UserViewSet, UsernameViewSet, MeViewSet, ReviewViewSet,
+from .views import (UserViewSet, AuthViewSet, ReviewViewSet,
                     CommentViewSet,
                     GenreViewSet, CategoryViewSet, TitlesViewSet)
 
 router_v1 = DefaultRouter()
 
-router_v1.register(
-    'users/<str:username>/', UsernameViewSet, basename='username')
-router_v1.register('users/<me>/', MeViewSet, basename='me')
+# router_v1.register(
+#     r'users/(?P<username>\.+)/', UsernameViewSet, basename='username')
+# router_v1.register('users/<me>/', MeViewSet, basename='me')
 router_v1.register('users', UserViewSet, basename='users')
 
 router_v1.register(r'genres', GenreViewSet)
@@ -23,8 +23,7 @@ router_v1.register(
     CommentViewSet, basename='comments')
 
 urlpatterns = [
-
-    path('v1/auth/signup/', MeViewSet.user_create, name='user_create'),
-    path('v1/auth/token/', MeViewSet.token_create, name='token_create'),
+    path('v1/auth/signup/', AuthViewSet.user_create, name='user_create'),
+    path('v1/auth/token/', AuthViewSet.token_create, name='token_create'),
     path('v1/', include(router_v1.urls)),
 ]
