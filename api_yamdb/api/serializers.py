@@ -4,6 +4,7 @@ from reviews.models import Review, Comment, User, Genre, Category, Title
 
 
 class UserSerializer(serializers.ModelSerializer):
+    lookup_field = 'username'
 
     class Meta:
         model = User
@@ -12,10 +13,27 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AuthSignupSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        max_length=254, allow_blank=False,
+    )
+    username = serializers.CharField(
+        max_length=150, allow_blank=False,
+    )
 
     class Meta:
         model = User
         fields = ('email', 'username')
+
+    def validate(self, data):
+        if data['username'] == 'me':
+            raise serializers.ValidationError(
+                'Использовать имя ''me'' в качестве username запрещено.')
+        return data
+
+
+class AuthTokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150, allow_blank=False)
+    confirmation_code = serializers.CharField(max_length=30, allow_blank=False)
 
 
 class GenreSerializer(serializers.ModelSerializer):
