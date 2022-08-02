@@ -3,6 +3,8 @@ from django.db.models import Avg
 from reviews.models import (Review, Comment, User, Genre, Category,
                             Title, Title_genre)
 
+from datetime import datetime
+
 
 class UserSerializer(serializers.ModelSerializer):
     lookup_field = 'username'
@@ -95,11 +97,35 @@ class TitlesSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
         slug_field='slug'
     )
+    genre = GenreSerializer(many=True, required=False)
     rating = serializers.SerializerMethodField()
+
+
+    def create(self, validated_data):
+        if 'genre' not in validated_data:
+            title = Title.objects.create(**validated_data)
+            return title
+        genres = validated_data.pop('genre')
+        title = Title.objects.create(**validated_data)
+
+        for genre in genres:
+            current_genre, status = Genre.objects.get_or_create(
+                **genre)
+            Title_genre.objects.create(
+                genre=current_genre, title=title)
+        return title
 
     def get_rating(self, obj):
         reviews = Review.objects.filter(title=obj.id)
         return reviews.aggregate(Avg('score'))['score__avg']
+
+    def validate_year(self, value):
+        year = datetime.today().year
+
+        if value > year:
+            raise serializers.ValidationError(
+                'Проверьте год произведения'
+            )
 
     class Meta:
         model = Title

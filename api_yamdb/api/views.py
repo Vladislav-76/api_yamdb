@@ -5,6 +5,8 @@ from rest_framework import filters
 from rest_framework import status
 from rest_framework import mixins
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from api.filters import TitleFilter
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from django.core.mail import send_mail
@@ -18,6 +20,8 @@ from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly)
 from .permissions import (IsAdminOrReadOnly, AdminOrSUOnly,
                           IsAuthorModerAdminOrReadOnly)
+
+
 
 CODES = {}
 
@@ -128,6 +132,9 @@ class CategoryViewSet(GenreCategoryPreSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
