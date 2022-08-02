@@ -1,17 +1,33 @@
 from rest_framework import permissions
 
 
-class AdminOnly(permissions.BasePermission):
+class AdminOrSUOnly(permissions.BasePermission):
     """Только администратор"""
     message = 'У вас недостаточно прав для выполнения данного действия.'
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-            return (request.user.role == 'admin')
+            return (request.user.role == 'admin' or request.user.is_superuser)
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
-            return (request.user.role == 'admin')
+            return (request.user.role == 'admin' or request.user.is_superuser)
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    message = 'У вас недостаточно прав для выполнения данного действия.'
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if request.user.is_authenticated:
+            return request.user.role == 'admin'
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if request.user.is_authenticated:
+            return request.user.role == 'admin'
 
 
 class IsAuthorModerAdminOrReadOnly(permissions.BasePermission):

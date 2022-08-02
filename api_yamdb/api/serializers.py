@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.db.models import Avg
-from reviews.models import Review, Comment, User, Genre, Category, Title
+from reviews.models import (Review, Comment, User, Genre, Category,
+                            Title, Title_genre)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -10,6 +11,15 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+        read_only_fields = ('username', 'email', 'role')
 
 
 class AuthSignupSerializer(serializers.ModelSerializer):
@@ -37,21 +47,53 @@ class AuthTokenSerializer(serializers.Serializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    lookup_field = 'slug'
+
     class Meta:
         model = Genre
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    lookup_field = 'slug'
+
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug')
+
+
+class TitlesGetSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+    genre = serializers.SerializerMethodField()
+    category = CategorySerializer()  # SerializerMethodField()
+
+    def get_rating(self, obj):
+        reviews = Review.objects.filter(title=obj.id)
+        return reviews.aggregate(Avg('score'))['score__avg']
+
+    def get_genre(self, obj):
+        queryset = Title_genre.objects.filter(title=obj.id)
+        genres = []
+        for position in queryset:
+            name = position.genre.name
+            slug = position.genre.slug
+            genres.append({"name": name, "slug": slug})
+        return genres
+
+    # def get_category(self, obj):
+    #     category = get_object_or_404(Category, titles=obj.id)
+    #     return {"name": category.name, "slug": category.slug}
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
+                  'category')
 
 
 class TitlesSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
-        slug_field='name'
+        slug_field='slug'
     )
     rating = serializers.SerializerMethodField()
 

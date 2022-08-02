@@ -34,9 +34,7 @@ class Command(BaseCommand):
                     # models[model].objects.get_or_create(**values)
                     models[model].objects.get_or_create(
                         id=row[0],
-                        review=Review.objects.get(id=row[1]),
-                        text=row[2],
-                        author=User.objects.get(id=row[3]),
-                        pub_date=row[4],
+                        title=Title.objects.get(id=row[1]),
+                        genre=Genre.objects.get(id=row[2]),
                     )
                     print(models[model].objects.get(id=row[0]))
