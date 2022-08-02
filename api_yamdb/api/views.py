@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from django.core.mail import send_mail
 from reviews.models import Title, Review, User, Genre, Category, Title
 from api.serializers import (AuthSignupSerializer, ReviewSerializer,
@@ -13,6 +13,7 @@ from api.serializers import (AuthSignupSerializer, ReviewSerializer,
                              CategorySerializer, TitlesSerializer)
 from rest_framework.permissions import (IsAuthenticatedOrReadOnly)
 from .permissions import AdminOnly, IsAuthorModerAdminOrReadOnly
+from rest_framework.exceptions import ValidationError
 
 CODES = {}
 
@@ -29,6 +30,24 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('$username',)
     permission_classes = (AdminOnly,)
     lookup_field = 'username'
+
+
+@api_view(['GET', 'PATCH'])
+def url_me(request):
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data, status=200)
+
+
+"""class MeViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all().order_by('id')
+    serializer_class = UserSerializer
+
+    @action(methods=['get'], detail=True)
+    def byhello(self, request):
+        serializer = UserSerializer(data=request.data)
+        self.object = self.get_object()
+        return Response(serializer.data, status=200)"""
+
 
 
 # class UsernameViewSet(viewsets.ModelViewSet):
