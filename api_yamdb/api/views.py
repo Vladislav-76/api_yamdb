@@ -133,8 +133,6 @@ class CategoryViewSet(GenreCategoryPreSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
-    filter_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):

@@ -109,6 +109,7 @@ class TitlesSerializer(serializers.ModelSerializer):
         title = Title.objects.create(**validated_data)
 
         for genre in genres:
+            # Надо изменить чтобы можно бало выбирать только из сушествующих жанров
             current_genre, status = Genre.objects.get_or_create(
                 **genre)
             Title_genre.objects.create(
@@ -117,15 +118,10 @@ class TitlesSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         reviews = Review.objects.filter(title=obj.id)
-        return reviews.aggregate(Avg('score'))['score__avg']
+        raiting = reviews.aggregate(Avg('score'))['score__avg']
+        if not raiting:
+            return 0
 
-    def validate_year(self, value):
-        year = datetime.today().year
-
-        if value > year:
-            raise serializers.ValidationError(
-                'Проверьте год произведения'
-            )
 
     class Meta:
         model = Title

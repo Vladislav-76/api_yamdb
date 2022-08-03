@@ -1,0 +1,89 @@
+###
+POST   http://127.0.0.1:8000/api/v1/categories/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYwMzc5NzEyLCJqdGkiOiI0NDBmODQxN2FhOTY0N2M3ODBlZDY1NWMzNzc3MTQ3MiIsInVzZXJfaWQiOjJ9.cb1XMzT4ZmehSDBjo2JfDfCUkaAM7AkMOUYCnZ9EoZg
+
+{
+  "name": "CATEGORY3",
+  "slug": "CATE3"
+}
+
+###
+GET   http://127.0.0.1:8000/api/v1/categories/CATEGORY3/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYwMzAxNTkyLCJqdGkiOiJkNDg2OTY5OWRiMzQ0NTVhODI4MTM3OTgzYzdlNzMxZCIsInVzZXJfaWQiOjF9.4LjsgTw_rbBCYxvDG6lpaZcHcMHrJ-0rTcm9zFiTHEQ
+
+
+###
+POST   http://127.0.0.1:8000/api/v1/auth/signup/
+Content-Type: application/json
+
+{
+  "email": "axa.sulan@mail.ru",
+  "username": "123"
+}
+
+###
+POST   http://127.0.0.1:8000/api/v1/auth/signup/
+Content-Type: application/json
+
+{
+  "email": "axa.sultan@mail.ru",
+  "username": "Axa"
+}
+
+
+###
+GET    http://127.0.0.1:8000/api/v1/users/me/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYwMzAxNTkyLCJqdGkiOiJkNDg2OTY5OWRiMzQ0NTVhODI4MTM3OTgzYzdlNzMxZCIsInVzZXJfaWQiOjF9.4LjsgTw_rbBCYxvDG6lpaZcHcMHrJ-0rTcm9zFiTHEQ
+
+
+###
+POST   http://127.0.0.1:8000/api/v1/auth/token/
+Content-Type: application/json
+
+
+{
+  "confirmation_code": "41980",
+  "username": "Axa"
+}
+
+
+
+
+###
+POST   http://127.0.0.1:8000/api/v1/auth/token/
+Content-Type: application/json
+Authorization: Token eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYwMzAxMDk4LCJqdGkiOiJmM2Q3ODAzMjJkODY0ZDVlODZhYjNkMTAyYmIyODRmNSIsInVzZXJfaWQiOjJ9.A_WFjj1tIPjQ8KhaW_m5u-TNgRpDSkRpjjLCPXogdBk
+
+{
+  "confirmation_code": "22352",
+  "username": "Axa"
+}
+
+
+###
+POST   http://127.0.0.1:8000/api/v1/titles/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYwMjk4OTA5LCJqdGkiOiJhNjU2Y2NlN2ExOGQ0OWQ5ODM5YzNiNTdlZDFkMzBmYyIsInVzZXJfaWQiOjJ9.LRTA1scKXJedw9kJEKG15anYxTgdr1lrGrK4zgZGwDM
+
+{
+  "name": "wer",
+  "year": 1222,
+  "genre": [
+    {"name": "qe",
+    "slug": "qe333456557"
+    },
+    {"name": "qw",
+    "slug": "qw333456557"
+    }
+  ],
+  "category": "CATE3"
+}
+
+
+###
+GET    http://127.0.0.1:8000/api/v1/titles/
+Content-Type: application/json
+Authorization: Token eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYwMTYyNzQyLCJqdGkiOiIyMDY3YTc4ZGYyMGI0NmQzOTFiZjUzZWU0YTBlMzZlYSIsInVzZXJfaWQiOjJ9.sR3mF4Kgxl7_Cb_tmq8HaIK13xPHuAVfcbRU73BXBk4
