@@ -123,19 +123,24 @@ class GenreCategoryPreSet(mixins.ListModelMixin, mixins.CreateModelMixin,
 class GenreViewSet(GenreCategoryPreSet):
     queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
-
+    permission_classes = [IsAdminOrReadOnly, ]
 
 class CategoryViewSet(GenreCategoryPreSet):
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrReadOnly, ]
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = [IsAdminOrReadOnly, ]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+    filterset_fields = ('genre__slug', 'category__slug', 'name',)
+
 
     def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
+        if self.action in ('retrieve', 'list'):
             return TitlesGetSerializer
         return TitlesSerializer
 
