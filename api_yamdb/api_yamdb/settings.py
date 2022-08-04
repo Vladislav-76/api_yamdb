@@ -12,7 +12,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'reviews.User'   # Новая строчка
+AUTH_USER_MODEL = 'reviews.User'
 
 
 # Application definition
@@ -20,13 +20,14 @@ AUTH_USER_MODEL = 'reviews.User'   # Новая строчка
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
-    'api.apps.ApiConfig',         # Новая строчка
-    'reviews.apps.ReviewsConfig',  # Новая строчка
+    'api.apps.ApiConfig',
+    'reviews.apps.ReviewsConfig',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

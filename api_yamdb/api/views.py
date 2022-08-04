@@ -1,5 +1,6 @@
 import random
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework import status
@@ -18,16 +19,19 @@ from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly)
 from .permissions import (IsAdminOrReadOnly, AdminOrSUOnly,
                           IsAuthorModerAdminOrReadOnly)
+from .filters import TitleFilter
 
 CODES = {}
 
 
 def generate_code():
+    """Генерация числового кода для выдачи токена пользователю."""
     random.seed()
     return str(random.randint(10000, 99999))
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Представление для эндпойнта /users/"""
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
     filter_backends = (filters.SearchFilter,)
@@ -39,6 +43,7 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def user_me(request):
+    """Представление для эндпойнта /users/me/"""
     if request.method == 'PATCH':
         serializer = UserMeSerializer(
             request.user, data=request.data, partial=True)
@@ -52,6 +57,7 @@ def user_me(request):
 
 @api_view(['POST'])
 def user_create(request):
+    """Представление для эндпойнта /auth/signup/"""
     serializer = AuthSignupSerializer(data=request.data)
     if serializer.is_valid():
         user_name = request.data['username']
@@ -86,6 +92,7 @@ def user_create(request):
 
 @api_view(['POST'])
 def token_create(request):
+    """Представление для эндпойнта /auth/token/"""
     serializer = AuthTokenSerializer(data=request.data)
     if serializer.is_valid():
         if User.objects.filter(username=request.data['username']).exists():
@@ -97,19 +104,16 @@ def token_create(request):
                 return Response(
                     {'token': str(refresh.access_token)}, status=200)
             else:
-                return Response(
-                    'Не верный confirmation_code!',
-                    status=400)
+                return Response('Не верный confirmation_code!', status=400)
         else:
-            return Response(
-                'Пользователь не найден!',
-                status=404)
+            return Response('Пользователь не найден!', status=404)
     else:
         return Response(serializer.errors, status=400)
 
 
 class GenreCategoryPreSet(mixins.ListModelMixin, mixins.CreateModelMixin,
                           mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    """Общий класс для эндпойнтов жаров и категорий."""
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -117,17 +121,23 @@ class GenreCategoryPreSet(mixins.ListModelMixin, mixins.CreateModelMixin,
 
 
 class GenreViewSet(GenreCategoryPreSet):
+    """Представление для эндпойнта /genres/"""
     queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
 
 
 class CategoryViewSet(GenreCategoryPreSet):
+    """Представление для эндпойнта /categories/"""
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    """Представление для эндпойнта /titles/"""
+    permission_classes = (IsAdminOrReadOnly,)
+    queryset = Title.objects.all().order_by('id')
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -136,6 +146,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Представление для эндпойнта /reviews/"""
     serializer_class = ReviewSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly, IsAuthorModerAdminOrReadOnly)
@@ -152,11 +163,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             author=self.request.user,
-            title=self.title_from_url()
-        )
+            title=self.title_from_url())
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Представление для эндпойнта /comments/"""
     serializer_class = CommentSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly, IsAuthorModerAdminOrReadOnly)

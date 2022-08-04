@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from django.db.models import Avg
+from datetime import datetime
 from reviews.models import (Review, Comment, User, Genre, Category,
-                            Title, Title_genre)
+                            Title)
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для эндпойнта /users/"""
     lookup_field = 'username'
 
     class Meta:
@@ -14,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
+    """Сериализатор для эндпойнта /users/me/"""
 
     class Meta:
         model = User
@@ -23,12 +26,11 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class AuthSignupSerializer(serializers.ModelSerializer):
+    """Сериализатор для эндпойнта /auth/signup/"""
     email = serializers.EmailField(
-        max_length=254, allow_blank=False,
-    )
+        max_length=254, allow_blank=False)
     username = serializers.CharField(
-        max_length=150, allow_blank=False,
-    )
+        max_length=150, allow_blank=False)
 
     class Meta:
         model = User
@@ -42,11 +44,13 @@ class AuthSignupSerializer(serializers.ModelSerializer):
 
 
 class AuthTokenSerializer(serializers.Serializer):
+    """Сериализатор для эндпойнта /auth/token/"""
     username = serializers.CharField(max_length=150, allow_blank=False)
     confirmation_code = serializers.CharField(max_length=30, allow_blank=False)
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для эндпойнта /genres/"""
     lookup_field = 'slug'
 
     class Meta:
@@ -55,6 +59,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор для эндпойнта /categories/"""
     lookup_field = 'slug'
 
     class Meta:
@@ -63,26 +68,14 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitlesGetSerializer(serializers.ModelSerializer):
+    """Сериализатор чтения для эндпойнта /titles/"""
     rating = serializers.SerializerMethodField()
-    genre = serializers.SerializerMethodField()
-    category = CategorySerializer()  # SerializerMethodField()
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
 
     def get_rating(self, obj):
         reviews = Review.objects.filter(title=obj.id)
         return reviews.aggregate(Avg('score'))['score__avg']
-
-    def get_genre(self, obj):
-        queryset = Title_genre.objects.filter(title=obj.id)
-        genres = []
-        for position in queryset:
-            name = position.genre.name
-            slug = position.genre.slug
-            genres.append({"name": name, "slug": slug})
-        return genres
-
-    # def get_category(self, obj):
-    #     category = get_object_or_404(Category, titles=obj.id)
-    #     return {"name": category.name, "slug": category.slug}
 
     class Meta:
         model = Title
@@ -91,11 +84,22 @@ class TitlesGetSerializer(serializers.ModelSerializer):
 
 
 class TitlesSerializer(serializers.ModelSerializer):
+    """Сериализатор записи для эндпойнта /titles/"""
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug', many=True
+    )
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
         slug_field='slug'
     )
     rating = serializers.SerializerMethodField()
+
+    def validate_year(self, value):
+        year = datetime.today().year
+        if value > year:
+            raise serializers.ValidationError('Неверная дата')
+        return value
 
     def get_rating(self, obj):
         reviews = Review.objects.filter(title=obj.id)
@@ -108,11 +112,10 @@ class TitlesSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для эндпойнта /reviews/"""
     author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault()
-    )
+        slug_field='username', read_only=True,
+        default=serializers.CurrentUserDefault())
 
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
@@ -132,11 +135,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для эндпойнта /comments/"""
     author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault()
-    )
+        slug_field='username', read_only=True,
+        default=serializers.CurrentUserDefault())
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')

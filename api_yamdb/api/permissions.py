@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 
 class AdminOrSUOnly(permissions.BasePermission):
-    """Только администратор"""
+    """Только администратор или суперпользователь."""
     message = 'У вас недостаточно прав для выполнения данного действия.'
 
     def has_permission(self, request, view):
@@ -15,6 +15,7 @@ class AdminOrSUOnly(permissions.BasePermission):
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """Запись только администратором."""
     message = 'У вас недостаточно прав для выполнения данного действия.'
 
     def has_permission(self, request, view):
@@ -31,6 +32,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 
 class IsAuthorModerAdminOrReadOnly(permissions.BasePermission):
+    """Запись только автором, модератором или администратором."""
     message = 'У вас недостаточно прав для выполнения данного действия.'
 
     def has_object_permission(self, request, view, obj):

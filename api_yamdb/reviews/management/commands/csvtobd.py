@@ -28,13 +28,18 @@ class Command(BaseCommand):
                 if row[0] == 'id':
                     fields = row[:]
                 else:
-                    # values = {}
-                    # for i in range(len(row)):
-                    #     values[fields[i]] = row[i]
-                    # models[model].objects.get_or_create(**values)
-                    models[model].objects.get_or_create(
-                        id=row[0],
-                        title=Title.objects.get(id=row[1]),
-                        genre=Genre.objects.get(id=row[2]),
-                    )
+                    # Модуль для автозагрузки, для кастомной
+                    # воспользоваться модулем ниже
+                    values = {}
+                    for i in range(len(row)):
+                        values[fields[i]] = row[i]
+                    models[model].objects.get_or_create(**values)
+
+                    # Для загрузки связанных полей написать куда загружать
+
+                    # models[model].objects.get_or_create(
+                    #     id=row[0],
+                    #     title=Title.objects.get(id=row[1]),
+                    #     genre=Genre.objects.get(id=row[2]),
+                    # )
                     print(models[model].objects.get(id=row[0]))

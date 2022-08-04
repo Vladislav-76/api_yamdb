@@ -37,24 +37,20 @@ class Category(models.Model):
         return self.name
 
 
-class Title(models.Model):  # убрал множественное число
+class Title(models.Model):
     name = models.CharField('Название', max_length=200)
-    # изменил тип поля, убрал автоустановку
     year = models.IntegerField('Год выпуска', db_index=True)
     description = models.TextField(help_text='Описание', blank=True)
-    # изменил тип поля
     genre = models.ManyToManyField(Genre, through='Title_genre')
-    # добавил blank=True, null=True
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL,
-        related_name="titles", blank=True, null=True
-    )
+        related_name="titles", blank=True, null=True)
 
     def __str__(self):
-        return self.name  # поправил ссылку на поле
+        return self.name
 
 
-class Title_genre(models.Model):  # создал модель для связи many to many
+class Title_genre(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
 
@@ -65,16 +61,11 @@ class Title_genre(models.Model):  # создал модель для связи 
 class Review(models.Model):
     text = models.TextField(help_text='Текст отзыва')
     pub_date = models.DateTimeField(
-        'Дата публикации', auto_now_add=True
-    )
+        'Дата публикации', auto_now_add=True)
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews'
-    )
-    # поправил множественное число, установил CASCADE
+        User, on_delete=models.CASCADE, related_name='reviews')
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE,
-        related_name="reviews"
-    )
+        Title, on_delete=models.CASCADE, related_name="reviews")
     score = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)])
 
@@ -87,15 +78,12 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments'
-    )
+        User, on_delete=models.CASCADE, related_name='comments')
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments'
-    )
+        Review, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField(help_text='Текст комментария')
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
-    )
+        'Дата добавления', auto_now_add=True, db_index=True)
 
     def __str__(self):
         return self.text[:15]

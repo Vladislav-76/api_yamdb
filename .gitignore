@@ -148,3 +148,6 @@ dmypy.json
 # папки со статикой и медиа
 media/
 
+# папки с менеджерами
+api_yamdb/reviews/management/
+
