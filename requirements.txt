@@ -11,11 +11,10 @@ coreschema==0.0.4
 cryptography==37.0.4
 defusedxml==0.7.1
 Django==2.2.16
-django-filter==22.1
+django-filter==21.1
 django-templated-mail==1.1.1
 djangorestframework==3.12.4
-djangorestframework-simplejwt==4.7.2
-djoser==2.1.0
+djangorestframework-simplejwt==5.1.0
 flake8==4.0.1
 idna==3.3
 iniconfig==1.1.1
