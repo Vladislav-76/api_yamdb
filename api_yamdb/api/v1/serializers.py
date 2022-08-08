@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from django.db.models import Avg
+from django.contrib.auth import get_user_model
 from datetime import datetime
-from reviews.models import (Review, Comment, User, Genre, Category,
-                            Title)
+from reviews.models import (Review, Comment, Genre, Category, Title)
+
+User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,38 +16,28 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
 
 
-class UserMeSerializer(serializers.ModelSerializer):
-    """Сериализатор для эндпойнта /users/me/"""
-
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
-        read_only_fields = ('username', 'email', 'role')
-
-
-class AuthSignupSerializer(serializers.ModelSerializer):
+class AuthSignupSerializer(serializers.Serializer):
     """Сериализатор для эндпойнта /auth/signup/"""
     email = serializers.EmailField(
         max_length=254, allow_blank=False)
     username = serializers.CharField(
         max_length=150, allow_blank=False)
 
-    class Meta:
-        model = User
-        fields = ('email', 'username')
-
     def validate(self, data):
         if data['username'] == 'me':
             raise serializers.ValidationError(
                 'Использовать имя ''me'' в качестве username запрещено.')
+        elif User.objects.filter(username=data['username']).exists():
+            if (User.objects.get(username=data['username']).email
+                    != data['email']):
+                raise serializers.ValidationError('Неверно указан email!')
         return data
 
 
 class AuthTokenSerializer(serializers.Serializer):
     """Сериализатор для эндпойнта /auth/token/"""
     username = serializers.CharField(max_length=150, allow_blank=False)
-    confirmation_code = serializers.CharField(max_length=30, allow_blank=False)
+    confirmation_code = serializers.CharField(max_length=99, allow_blank=False)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -69,13 +60,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TitlesGetSerializer(serializers.ModelSerializer):
     """Сериализатор чтения для эндпойнта /titles/"""
-    rating = serializers.SerializerMethodField()
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-
-    def get_rating(self, obj):
-        reviews = Review.objects.filter(title=obj.id)
-        return reviews.aggregate(Avg('score'))['score__avg']
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
@@ -93,7 +80,6 @@ class TitlesSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
         slug_field='slug'
     )
-    rating = serializers.SerializerMethodField()
 
     def validate_year(self, value):
         year = datetime.today().year
@@ -101,13 +87,9 @@ class TitlesSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Неверная дата')
         return value
 
-    def get_rating(self, obj):
-        reviews = Review.objects.filter(title=obj.id)
-        return reviews.aggregate(Avg('score'))['score__avg']
-
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
+        fields = ('id', 'name', 'year', 'description', 'genre',
                   'category')
 
 
@@ -123,14 +105,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ('author', 'pub_date')
 
     def validate(self, data):
-        if self.context['request'].stream.method == 'POST':
-            author = self.context['request'].user
-            title_id = (self.context['request'].
-                        parser_context['kwargs'].get('title_id'))
-            queryset = Review.objects.filter(author=author, title=title_id)
-            if queryset.exists() is True:
-                raise serializers.ValidationError(
-                    'Можно оставить только один отзыв на произведение!')
+        if self.context['request'].stream.method != 'POST':
+            return data
+        author = self.context['request'].user
+        title_id = (self.context['request'].
+                    parser_context['kwargs'].get('title_id'))
+        queryset = Review.objects.filter(author=author, title=title_id)
+        if queryset.exists() is True:
+            raise serializers.ValidationError(
+                'Можно оставить только один отзыв на произведение!')
         return data
 
 

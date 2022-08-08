@@ -12,7 +12,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'reviews.User'
+AUTH_USER_MODEL = 'users.User'
 
 
 # Application definition
@@ -20,7 +20,9 @@ AUTH_USER_MODEL = 'reviews.User'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'users.apps.UsersConfig',
     'api.apps.ApiConfig',
+    'api.v1.apps.ApiConfig',
     'reviews.apps.ReviewsConfig',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

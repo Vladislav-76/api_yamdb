@@ -9,22 +9,12 @@ class AdminOrSUOnly(permissions.BasePermission):
         if request.user.is_authenticated:
             return (request.user.role == 'admin' or request.user.is_superuser)
 
-    def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated:
-            return (request.user.role == 'admin' or request.user.is_superuser)
-
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """Запись только администратором."""
     message = 'У вас недостаточно прав для выполнения данного действия.'
 
     def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if request.user.is_authenticated:
-            return request.user.role == 'admin'
-
-    def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
         if request.user.is_authenticated:
