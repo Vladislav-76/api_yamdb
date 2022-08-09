@@ -126,7 +126,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly, IsAuthorModerAdminOrReadOnly)
-    # http_method_names = ['head', 'get', 'post', 'patch', 'delete']
 
     def title_from_url(self):
         title_id = self.kwargs.get("title_id")
@@ -147,7 +146,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly, IsAuthorModerAdminOrReadOnly)
-    # http_method_names = ['head', 'get', 'post', 'patch', 'delete']
 
     def review_from_url(self):
         title_id = self.kwargs.get("title_id")
