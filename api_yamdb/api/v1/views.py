@@ -1,5 +1,4 @@
 from django.http import Http404
-from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -58,13 +57,8 @@ def user_create(request):
     serializer.is_valid(raise_exception=True)
     user_name = request.data['username']
     user_email = request.data['email']
-    try:
-        user = User.objects.get_or_create(
-            username=user_name, email=user_email)[0]
-    except IntegrityError:
-        return Response(
-            'Пользователь с таким username или email уже существует!',
-            status=400)
+    user = User.objects.get_or_create(
+        username=user_name, email=user_email)[0]
     token = default_token_generator.make_token(user)
     mail = ('Код для завершения аутентификации',
             f'{user_name} получил confirmation_code:'
@@ -132,7 +126,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly, IsAuthorModerAdminOrReadOnly)
-    http_method_names = ['head', 'get', 'post', 'patch', 'delete']
+    # http_method_names = ['head', 'get', 'post', 'patch', 'delete']
 
     def title_from_url(self):
         title_id = self.kwargs.get("title_id")
@@ -153,7 +147,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly, IsAuthorModerAdminOrReadOnly)
-    http_method_names = ['head', 'get', 'post', 'patch', 'delete']
+    # http_method_names = ['head', 'get', 'post', 'patch', 'delete']
 
     def review_from_url(self):
         title_id = self.kwargs.get("title_id")

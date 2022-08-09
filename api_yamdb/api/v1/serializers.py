@@ -23,15 +23,18 @@ class AuthSignupSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150, allow_blank=False)
 
-    def validate(self, data):
-        if data['username'] == 'me':
+    def validate_username(self, value):
+        if value == 'me':
             raise serializers.ValidationError(
-                'Использовать имя ''me'' в качестве username запрещено.')
-        elif User.objects.filter(username=data['username']).exists():
-            if (User.objects.get(username=data['username']).email
-                    != data['email']):
-                raise serializers.ValidationError('Неверно указан email!')
-        return data
+                'Использовать имя ''me'' в качестве username запрещено!')
+        elif User.objects.filter(username=value).exists():
+            raise serializers.ValidationError('Tакой username уже существует!')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Неверно указан email!')
+        return value
 
 
 class AuthTokenSerializer(serializers.Serializer):
@@ -84,7 +87,7 @@ class TitlesSerializer(serializers.ModelSerializer):
     def validate_year(self, value):
         year = datetime.today().year
         if value > year:
-            raise serializers.ValidationError('Неверная дата')
+            raise serializers.ValidationError('Год указан неверно!')
         return value
 
     class Meta:
